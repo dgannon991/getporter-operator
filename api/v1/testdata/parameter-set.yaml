@@ -1,4 +1,4 @@
-schemaVersion: 1.0.1
+schemaVersion: 1.1.0
 name: porter-test-me
 namespace: dev
 parameters:
