@@ -108,7 +108,7 @@ func TestUninstallInstallation(t *testing.T) {
 	err := rec.uninstallInstallation(ctx, rec.Log, inst)
 	assert.NoError(t, err)
 	gotInstall := &v1.Installation{}
-	rec.Get(ctx, types.NamespacedName{Name: "fake-install", Namespace: "fake-ns"}, gotInstall)
+	assert.NoError(t, rec.Get(ctx, types.NamespacedName{Name: "fake-install", Namespace: "fake-ns"}, gotInstall))
 	assert.NotEmpty(t, gotInstall.Status)
 	assert.Equal(t, v1.PhaseUnknown, gotInstall.Status.Phase)
 }
@@ -507,7 +507,7 @@ func TestCheckOrCreateInstallationOutputsCRCreateFail(t *testing.T) {
 func TestSetupWithManager(t *testing.T) {
 	r := &InstallationReconciler{}
 	scheme := runtime.NewScheme()
-	v1.AddToScheme(scheme)
+	assert.NoError(t, v1.AddToScheme(scheme))
 	var restConfig *rest.Config
 	mgr, err := manager.New(restConfig, manager.Options{})
 	assert.Error(t, err)

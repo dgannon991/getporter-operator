@@ -8,8 +8,11 @@ import (
 
 func TestAddKnownTypes(t *testing.T) {
 	scheme := runtime.NewScheme()
-	AddToScheme(scheme)
-	err := addKnownTypes(scheme)
+	err := AddToScheme(scheme)
+	if err != nil {
+		t.Fatalf("failure to add to Scheme %v", err)
+	}
+	err = addKnownTypes(scheme)
 	if err != nil {
 		t.Fatalf("failure to add known types %v", err)
 	}

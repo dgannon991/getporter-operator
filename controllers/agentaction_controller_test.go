@@ -185,7 +185,7 @@ func TestAgentActionReconciler_Reconcile(t *testing.T) {
 			},
 		},
 	}
-	controller := setupAgentActionController(testdata...)
+	controller := setupAgentActionController(t, testdata...)
 
 	var action v1.AgentAction
 	triggerReconcile := func() {
@@ -336,7 +336,7 @@ func TestAgentActionReconciler_createAgentVolume(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			controller := setupAgentActionController()
+			controller := setupAgentActionController(t)
 			action := &v1.AgentAction{
 				TypeMeta: metav1.TypeMeta{
 					APIVersion: v1.GroupVersion.String(),
@@ -468,7 +468,7 @@ func TestAgentActionReconciler_createConfigSecret(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			controller := setupAgentActionController()
+			controller := setupAgentActionController(t)
 			action := &v1.AgentAction{
 				TypeMeta: metav1.TypeMeta{
 					APIVersion: v1.GroupVersion.String(),
@@ -597,7 +597,7 @@ func TestAgentActionReconciler_createWorkdirSecret(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			controller := setupAgentActionController()
+			controller := setupAgentActionController(t)
 
 			action := &v1.AgentAction{
 				TypeMeta: metav1.TypeMeta{
@@ -682,7 +682,7 @@ func TestAgentActionReconciler_createWorkdirSecret(t *testing.T) {
 }
 
 func TestAgentActionReconciler_createAgentJob(t *testing.T) {
-	controller := setupAgentActionController()
+	controller := setupAgentActionController(t)
 
 	action := testAgentAction()
 	agentCfg := testAgentCfgSpec()
@@ -801,7 +801,7 @@ func TestAgentActionReconciler_createAgentJob_withImagePullSecrets(t *testing.T)
 	testdata := []client.Object{
 		testSA,
 	}
-	controller := setupAgentActionController(testdata...)
+	controller := setupAgentActionController(t, testdata...)
 
 	action := testAgentAction()
 	agentCfg := testAgentCfgSpec()
@@ -862,7 +862,7 @@ func TestAgentActionReconciler_createAgentJob_withImagePullSecrets(t *testing.T)
 }
 
 func TestAgentActionReconciler_getAgentVolumes_agentconfigaction(t *testing.T) {
-	controller := setupAgentActionController()
+	controller := setupAgentActionController(t)
 	action := testAgentAction()
 	agentCfg := testAgentCfgSpec()
 	pvc := &corev1.PersistentVolumeClaim{ObjectMeta: metav1.ObjectMeta{Name: "mypvc"}}
@@ -902,7 +902,7 @@ func TestAgentActionReconciler_getAgentVolumes_agentconfigaction(t *testing.T) {
 // Ensure that we can create a valid AgentAction when no plugins were specified for the AgentConfig
 // In which case we should not mount porter-plugins into the agent
 func TestAgentActionReconciler_NoPluginsSpecified(t *testing.T) {
-	controller := setupAgentActionController()
+	controller := setupAgentActionController(t)
 	action := testAgentAction()
 	agentCfg := testAgentCfgSpec()
 
@@ -935,7 +935,7 @@ func TestDeletionTimeStampAgentAction(t *testing.T) {
 		},
 	}
 	ctx := context.Background()
-	r := setupAgentActionController(action)
+	r := setupAgentActionController(t, action)
 	_, err := r.Reconcile(ctx, ctrl.Request{})
 	assert.NoError(t, err)
 }
@@ -963,7 +963,7 @@ func TestAgentActionReconciler_resolveAgentConfig(t *testing.T) {
 	actionWithOverride.Spec.AgentConfig = &corev1.LocalObjectReference{Name: overrideCfg.Name}
 	actionWithNoOverride := testAgentAction()
 	actionWithNoOverride.Name = "no override"
-	controller := setupAgentActionController(&systemCfg, &overrideCfg, actionWithOverride, actionWithNoOverride)
+	controller := setupAgentActionController(t, &systemCfg, &overrideCfg, actionWithOverride, actionWithNoOverride)
 
 	_, err := controller.resolveAgentConfig(context.Background(), logr.Discard(), actionWithOverride)
 	require.ErrorContains(t, err, "resolved agent configuration is not ready to be used")
@@ -1028,11 +1028,11 @@ func assertVolumeMount(t *testing.T, mounts []corev1.VolumeMount, name string, p
 	assert.Fail(t, fmt.Sprintf("expected the %s VolumeMount to be set", name))
 }
 
-func setupAgentActionController(objs ...client.Object) AgentActionReconciler {
+func setupAgentActionController(t *testing.T, objs ...client.Object) AgentActionReconciler {
 	scheme := runtime.NewScheme()
-	v1.AddToScheme(scheme)
-	batchv1.AddToScheme(scheme)
-	corev1.AddToScheme(scheme)
+	assert.NoError(t, v1.AddToScheme(scheme))
+	assert.NoError(t, batchv1.AddToScheme(scheme))
+	assert.NoError(t, corev1.AddToScheme(scheme))
 
 	fakeBuilder := fake.NewClientBuilder()
 	fakeBuilder.WithScheme(scheme)

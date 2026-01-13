@@ -29,8 +29,11 @@ const (
 // DeployWebsite triggers a Netlify build for the website.
 func DeployWebsite() error {
 	// Put up a page on the preview that redirects to the live site
-	os.MkdirAll("docs/public", 0755)
-	err := copy("hack/website-redirect.html", "docs/public/index.html")
+	err := os.MkdirAll("docs/public", 0755)
+	if err != nil {
+		return err
+	}
+	err = copy("hack/website-redirect.html", "docs/public/index.html")
 	if err != nil {
 		return err
 	}

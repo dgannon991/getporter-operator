@@ -101,8 +101,8 @@ func Vet() {
 }
 
 func Lint() {
-	mg.Deps(func() { tools.EnsureStaticCheckAt("2025.1.1") })
-	must.RunV("staticcheck", "./...")
+	mg.Deps(tools.EnsureGolangCILint)
+	must.RunV("golangci-lint", "run", "--max-issues-per-linter", "0", "--max-same-issues", "0", "./...")
 }
 
 // Build the controller and bundle.

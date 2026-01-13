@@ -212,7 +212,10 @@ func (r *InstallationReconciler) CheckOrCreateInstallationOutputsCR(ctx context.
 			}
 			// TODO: Wrap in a retry? Try to reduce the errors
 			log.V(Log5Trace).Info("setting owner references on outputs cr")
-			controllerutil.SetOwnerReference(inst, outputs, r.Scheme)
+			err = controllerutil.SetOwnerReference(inst, outputs, r.Scheme)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
 			err = r.Create(ctx, outputs, &client.CreateOptions{})
 			if err != nil {
 				return ctrl.Result{}, err
